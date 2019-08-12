@@ -1,211 +1,224 @@
-;(function () {
-	'use strict';
+//Strict Mode 
+(function($) {
+  "use strict";
 
-	var isMobile = {
-		Android: function() {
-			return navigator.userAgent.match(/Android/i);
-		},
-			BlackBerry: function() {
-			return navigator.userAgent.match(/BlackBerry/i);
-		},
-			iOS: function() {
-			return navigator.userAgent.match(/iPhone|iPad|iPod/i);
-		},
-			Opera: function() {
-			return navigator.userAgent.match(/Opera Mini/i);
-		},
-			Windows: function() {
-			return navigator.userAgent.match(/IEMobile/i);
-		},
-			any: function() {
-			return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Opera() || isMobile.Windows());
-		}
-	};
+//Run on Document Ready
+$(document).ready(function(){  
 
-	var fullHeight = function() {
-		if ( !isMobile.any() ) {
-			$('.js-fullheight').css('height', $(window).height());
-			$(window).resize(function(){
-				$('.js-fullheight').css('height', $(window).height());
-			});
-		}
+  //Smooth scrool
+  $("html").niceScroll({styler:"fb",cursorcolor:"#000"});
 
-	};
+  //Side menu - Open
+  $('.side-menu-open').mouseenter(function(){
+    $('.side-menu').animate({'left': '0px'}, 600, 'easeOutCubic');
+  });
 
-	// Animations
-	var contentWayPoint = function() {
-		var i = 0;
-		$('.animate-box').waypoint( function( direction ) {
+  //Side menu - Close
+  $('#side-menu-close').click(function(){
+    var sideWidth = $('.side-menu').outerWidth();
+    var sideWidthClose = '-' + sideWidth + 'px';
+    $('.side-menu').animate({'left': sideWidthClose}, 600, 'easeOutCubic');
+    preventDefault();
+  });
 
-			if( direction === 'down' && !$(this.element).hasClass('animated') ) {
-				
-				i++;
+  //Smooth Scroll on anchor links
+  $('a[href*=#]:not([href=#])').click(function() {
+    if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') && location.hostname == this.hostname) {
+      var target = $(this.hash);
+      target = target.length ? target : $('[name=' + this.hash.slice(1) +']');
+      if (target.length) {
+        $('html,body').animate({
+          scrollTop: target.offset().top
+        }, 700, 'easeInOutExpo');
+        return false;
+      }
+    }
+  });
 
-				$(this.element).addClass('item-animate');
-				setTimeout(function(){
+  //Bootstrap Scroll Spy
+  $('[data-spy="scroll"]').each(function () {
+    var $spy = $(this).scrollspy('refresh');
+  });  
 
-					$('body .animate-box.item-animate').each(function(k){
-						var el = $(this);
-						setTimeout( function () {
-							var effect = el.data('animate-effect');
-							if ( effect === 'fadeIn') {
-								el.addClass('fadeIn animated');
-							} else if ( effect === 'fadeInLeft') {
-								el.addClass('fadeInLeft animated');
-							} else if ( effect === 'fadeInRight') {
-								el.addClass('fadeInRight animated');
-							} else {
-								el.addClass('fadeInUp animated');
-							}
+  //Bxslider -see options at http://bxslider.com/
+  $('.portfolio-itens').bxSlider({
+      slideWidth: 200,
+      minSlides: 1,
+      maxSlides: 4,
+      moveSlides: 1,
+      slideMargin: 5,
+      auto: false,
+      mode: 'horizontal',
+      useCSS: false,
+      speed: 900,
+      infiniteLoop: false,
+      hideControlOnEnd: true,
+      easing: 'easeOutElastic',
+      pager: false,
+      prevText: '<i class="fa fa-chevron-left"></i>',
+      nextText: '<i class="fa fa-chevron-right"></i>'
+  });
 
-							el.removeClass('item-animate');
-						},  k * 200, 'easeInOutExpo' );
-					});
-					
-				}, 100);
-				
-			}
+  
+  //Nivo Lightbox
+  $('a.nivobox').nivoLightbox({ effect: 'fade' });
 
-		} , { offset: '85%' } );
-	};
+  //Portfolio Animations
+  $('.portfolio-item').hover(function(){
+    $(this).find('.hover-bg-wrapper').fadeIn(200);
+    $(this).find('.hover').show();  
+    $(this).find('p').addClass('animated').addClass('fadeInUp');
+  }, function(){
+    $(this).find('.hover-bg-wrapper').fadeOut(200);
+    $(this).find('.hover').fadeOut(200);
+    $(this).find('p').removeClass('fadeInUp');
+  });
 
+  //Contact Form Validator and Ajax Sender
+  $("#contactForm").validate({
+    submitHandler: function(form) {
+      $.ajax({
+        type: "POST",
+        url: "php/contact-form.php",
+        data: {
+          "name": $("#contactForm #name").val(),
+          "email": $("#contactForm #email").val(),
+          "subject": $("#contactForm #subject").val(),
+          "message": $("#contactForm #message").val()
+        },
+        dataType: "json",
+        success: function (data) {
+          if (data.response == "success") {
+            $("#contactSuccess").fadeIn(300);
+            $("#contactError").addClass("hidden");
 
-	var burgerMenu = function() {
+            $("#contactForm #name, #contactForm #email, #contactForm #subject, #contactForm #message")
+              .val("")
+              .blur()
+              .closest(".control-group")
+              .removeClass("success")
+              .removeClass("error");              
+            
+          } else {
+            $("#contactError").fadeIn(300);
+            $("#contactSuccess").addClass("hidden");
+          }
+        }
 
-		$('.js-colorlib-nav-toggle').on('click', function(event){
-			event.preventDefault();
-			var $this = $(this);
+      });
+    }
+  });
 
-			if ($('body').hasClass('offcanvas')) {
-				$this.removeClass('active');
-				$('body').removeClass('offcanvas');	
-			} else {
-				$this.addClass('active');
-				$('body').addClass('offcanvas');	
-			}
-		});
+  //Modal for Contact Form
+  $('.modal-wrap').click(function(){
+    $('.modal-wrap').fadeOut(300);
+  });      
 
+  //Background Height fix for vertical progress
+  $( ".full-height" ).each(function() {
+    var $stretch = $(this);
+    $stretch.css({ height: $stretch.closest('.line').find('.content-wrap').height() });
+  }); 
 
+});
 
-	};
+// generate a random quote
+var quotes = [
+  { 
+	text: "I don't care that they stole my idea. I care that they don't have any of their own.", 
+	author: 'Nikola Tesla'
+  },
+  { 
+	text: "The present is theirs. The future, for which I really worked, is mine.", 
+	author: 'Nikola Tesla'
+  },
+  { 
+	text: "I do not think there is any thrill that can go through the human heart like that felt by the inventor as he sees some creation of the brain unfolding to success. Such emotions make a man forget food, sleep, friends, love, everything.", 
+	author: 'Nikola Tesla'
+  },
+  { 
+	text: "The true sign of intelligence is not knowledge but imagination.", 
+	author: 'Albert Einstein'
+  },
+  { 
+	text: "Look deep into nature, and then you will understand everything better.", 
+	author: 'Albert Einstein'
+  },
+  { 
+	text: "Learn from yesterday, live for today, hope for tomorrow.  The important thing is not to stop questioning.", 
+	author: 'Albert Einstein'
+  },
+  { 
+	text: "A person who never made a mistake never tried anything new.", 
+	author: 'Albert Einstein'
+  },
+  { 
+	text: "If you can't explain it simply, you don't understand it well enough.", 
+	author: 'Albert Einstein'
+  },
+  { 
+	text: "The purpose of our lives is to be happy.", 
+	author: 'Dalai Lama'
+  },
+  { 
+	text: "Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.", 
+	author: 'Brian Kernighan'
+  },
+  { 
+	text: "Always code as if the guy who ends up maintaining your code will be a violent psychopath who knows where you live.", 
+	author: 'Martin Golding'
+  },
+  { 
+	text: "If you can't explain it simply, you don't understand it well enough.", 
+	author: 'Albert Einstein'
+  },
+  { 
+	text: "If you can't explain it simply, you don't understand it well enough.", 
+	author: 'Albert Einstein'
+  },
+  {
+	text: "Programming today is a race between software engineers striving to build bigger and better idiot-proof programs, and the Universe trying to produce bigger and better idiots. So far, the Universe is winning.",
+	author: 'Rich Cook'
+  },
+  {
+	text: "Any fool can write code that a computer can understand. Good programmers write code that humans can understand.",
+	author: 'Martin Fowler'
+  }
+];
 
-	// Click outside of offcanvass
-	var mobileMenuOutsideClick = function() {
+var quote = quotes[Math.floor(Math.random() * quotes.length)];
 
-		$(document).click(function (e) {
-	    var container = $("#colorlib-aside, .js-colorlib-nav-toggle");
-	    if (!container.is(e.target) && container.has(e.target).length === 0) {
+$('.footer-quote').html(quote.text);
+$('.footer-author').html(quote.author);
 
-	    	if ( $('body').hasClass('offcanvas') ) {
+//Run on Window Load
+$(window).load(function(){
+  //Page loader
+  $('#page-loader').fadeOut(200, function(){});
 
-    			$('body').removeClass('offcanvas');
-    			$('.js-colorlib-nav-toggle').removeClass('active');
-			
-	    	}
-	    	
-	    }
-		});
+  //Safari Crossbrowser animation Fix
+  if ($('html').hasClass('safari')) {
+      $('#content-body').removeClass('animated');
+  }
 
-		$(window).scroll(function(){
-			if ( $('body').hasClass('offcanvas') ) {
+  //Fade In load
+  $('#content-body').addClass('fadeInUp');
 
-    			$('body').removeClass('offcanvas');
-    			$('.js-colorlib-nav-toggle').removeClass('active');
-			
-	    	}
-		});
-
-	};
-
-	var clickMenu = function() {
-
-		$('#navbar a:not([class="external"])').click(function(event){
-			var section = $(this).data('nav-section'),
-				navbar = $('#navbar');
-
-				if ( $('[data-section="' + section + '"]').length ) {
-			    	$('html, body').animate({
-			        	scrollTop: $('[data-section="' + section + '"]').offset().top - 55
-			    	}, 500);
-			   }
-
-		    if ( navbar.is(':visible')) {
-		    	navbar.removeClass('in');
-		    	navbar.attr('aria-expanded', 'false');
-		    	$('.js-colorlib-nav-toggle').removeClass('active');
-		    }
-
-		    event.preventDefault();
-		    return false;
-		});
-
-
-	};
-
-	// Reflect scrolling in navigation
-	var navActive = function(section) {
-
-		var $el = $('#navbar > ul');
-		$el.find('li').removeClass('active');
-		$el.each(function(){
-			$(this).find('a[data-nav-section="'+section+'"]').closest('li').addClass('active');
-		});
-
-	};
-
-	var navigationSection = function() {
-
-		var $section = $('section[data-section]');
-		
-		$section.waypoint(function(direction) {
-		  	
-		  	if (direction === 'down') {
-		    	navActive($(this.element).data('section'));
-		  	}
-		}, {
-	  		offset: '150px'
-		});
-
-		$section.waypoint(function(direction) {
-		  	if (direction === 'up') {
-		    	navActive($(this.element).data('section'));
-		  	}
-		}, {
-		  	offset: function() { return -$(this.element).height() + 155; }
-		});
-
-	};
-
-	var owlCrouselFeatureSlide = function() {
-		$('.owl-carousel').owlCarousel({
-			animateOut: 'fadeOut',
-		   animateIn: 'fadeIn',
-		   autoplay: true,
-		   loop:true,
-		   margin:0,
-		   nav:true,
-		   dots: false,
-		   autoHeight: true,
-		   items: 1,
-		   navText: [
-		      "<i class='icon-arrow-left3 owl-direction'></i>",
-		      "<i class='icon-arrow-right3 owl-direction'></i>"
-	     	]
-		})
-	};
-
-	// Document on load.
-	$(function(){
-		fullHeight();
-		contentWayPoint();
-		burgerMenu();
-
-		clickMenu();
-		navigationSection();
-
-		mobileMenuOutsideClick();
-		owlCrouselFeatureSlide();
-	});
-
-
-}());
+  //Background Height fix for vertical progress
+  setTimeout(function () {    
+      $( ".full-height" ).each(function() {
+        var $stretch = $(this);
+        $stretch.css({ height: $stretch.closest('.line').find('.content-wrap').outerHeight() });
+      });  
+    }, 300
+  );
+  
+  //Background Height fix for vertical progress on window resize
+  $(window).resize(function(){ 
+     $( ".full-height" ).each(function() {
+      var $stretch = $(this);
+      $stretch.css({ height: $stretch.closest('.line').find('.content-wrap').outerHeight() });
+    }); 
+  });
+});
+})(jQuery);
